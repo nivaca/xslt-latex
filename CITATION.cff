@@ -1,4 +1,4 @@
-abstract: Python script that cleans up a LaTeX document transformed from a TEI source.
+abstract: XSLT templates to transform TEI into LuaLaTeX
 authors:
   - family-names: Vaughan
     given-names: Nicolas
@@ -6,12 +6,12 @@ authors:
 cff-version: 1.2.0
 date-released: "2021-06-01"
 keywords:
-  - "regex cleanup"
-  - Python
-  - LaTeX
+  - XSLT
+  - TEI
+  - LuaLaTeX
 license: CC-BY-NC-SA-4.0
 licence-url: "https://creativecommons.org/licenses/by-nc-sa/4.0/"
 message: If you use this software, please cite it using these metadata.
-repository-code: "https://github.com/nivaca/cleantex"
-title: cleantex
+repository-code: "https://github.com/nivaca/xslt-latex"
+title: xslt-latex
 version: 0.1
