@@ -1,13 +1,50 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="2.0" xpath-default-namespace="http://www.tei-c.org/ns/1.0" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:my="http://my">
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" 
+  xmlns:tei="http://www.tei-c.org/ns/1.0"  
+  xmlns:xs="http://www.w3.org/2001/XMLSchema" 
+  xmlns:xd="http://www.oxygenxml.com/ns/doc/xsl"
+  xmlns:my="http://nicolasvaughan.org"
+  exclude-result-prefixes="tei my xd xs"
+  xpath-default-namespace="http://www.tei-c.org/ns/1.0"
+  version="3.0">
+  
+  
+  <xd:doc scope="stylesheet">
+    <xd:desc>
+      <xd:p><xd:b>Created on:</xd:b>2020-06-01</xd:p>
+      <xd:p><xd:b>Author:</xd:b>nivaca</xd:p>
+      <xd:p>This file contains templates dealing with
+        internal and external references.</xd:p>
+    </xd:desc>
+  </xd:doc>  
   
   
   
+  <!--=============================================-->
+  <!--             function my:cleanref            -->
+  <!--=============================================-->
+  <xd:doc>
+    <xd:desc>function my:cleanref</xd:desc>
+    <xd:desc>Changes '_' into '-' in xml:id, needed for LaTeX,
+      and removes '#' chars.</xd:desc>
+    <xd:param name="input"/>
+  </xd:doc>
   <xsl:function name="my:cleanref" as="xs:string">
     <xsl:param name="input"/>
-    <xsl:sequence select="replace($input, '#', '')"/>
+    <xsl:variable name="temp" select="replace($input, '_', '-')"/>
+    <xsl:sequence select="replace($temp, '#', '')"/>
   </xsl:function>
   
+  
+  
+  <!--=============================================-->
+  <!--             function my:cleanurl            -->
+  <!--=============================================-->
+  <xd:doc>
+    <xd:desc>function my:cleanurl</xd:desc>
+    <xd:desc>Protects URLs for LaTeX:
+      escapes # and % chars.</xd:desc>
+    <xd:param name="input"/>
+  </xd:doc>
   <xsl:function name="my:cleanurl" as="xs:string">
     <xsl:param name="input"/>
     <xsl:variable name="temp" select="replace($input, '#', '\\#')"/>
@@ -17,22 +54,31 @@
   
   <!--
     #####################
-         ref @type
+    ref @type
     #####################
-    a:        \citeauthor
-    p:        \parencite
-    t:        \citetitle
-    y:        \citeyear
-    py:       \citeyear in parenthesis
-    abbr:     \citeabbr
-    pabbr:    \citeabbr in parenthesis: (ZSM, 297)
-    abbrpc:    \citeabbr (content)
-    fulltext: use text/rend without calling LaTeX's cite
-    nc:       \nocite
-    pnc:      \nocite in parenthesis
-    url:      href
   -->
-  
+  <xd:doc>
+    <xd:desc>
+      <xd:p>function my:processref</xd:p>
+      <xd:p>helps process refs according to type</xd:p>
+      <xd:ul>
+        <li>a:        \citeauthor</li>
+        <li>p:        \parencite</li>
+        <li>t:        \citetitle</li>
+        <li>y:        \citeyear</li>
+        <li>py:       \citeyear in parenthesis</li>
+        <li>abbr:     \citeabbr</li>
+        <li>pabbr:    \citeabbr in parenthesis: (ZSM, 297)</li>
+        <li>abbrpc:   \citeabbr (content)</li>
+        <li>fulltext: use text/rend without calling LaTeX's cite</li>
+        <li>nc:       \nocite</li>
+        <li>pnc:      \nocite in parenthesis</li>
+        <li>url:      \href</li>
+        <li>note:     \ref</li>
+      </xd:ul>
+    </xd:desc>
+    <xd:param name="type"/>
+  </xd:doc>
   <xsl:function name="my:processref">
     <xsl:param name="type"/>
     <xsl:choose>
@@ -65,7 +111,21 @@
   </xsl:function>
   
   
-   <!--                   ref[@type='abbrpc']                -->
+  
+  <xd:doc>
+    <xd:desc>ref[@type='note']</xd:desc>
+  </xd:doc>
+  <xsl:template match="ref[@type='note']" priority="2">
+    <xsl:text>\smnoteanchor{</xsl:text>
+    <xsl:value-of select="my:cleanref(@target)"/>
+    <xsl:text>}</xsl:text>
+  </xsl:template>
+  
+  
+  
+  <xd:doc>
+    <xd:desc>ref[@type='abbrpc']</xd:desc>
+  </xd:doc>
   <xsl:template match="ref[@type='abbrpc']" priority="2">
     <xsl:text>\citeabbr{</xsl:text>
     <xsl:value-of select="my:cleanref(@target)"/>
@@ -84,8 +144,14 @@
     <xsl:text>)</xsl:text>
   </xsl:template>
   
-  <!--            ref[@type='nc' or @type='pnc']             -->
-  <!--                      nocite refs                      -->
+  
+  
+  <xd:doc>
+    <xd:desc>
+      <xd:p>ref[@type='nc' or @type='pnc']</xd:p>
+      <xd:p>nocite refs</xd:p>
+    </xd:desc>
+  </xd:doc>
   <xsl:template match="ref[@type='nc' or @type='pnc']" priority="2">
     <xsl:text>\nocite{</xsl:text>
     <xsl:value-of select="my:cleanref(@target)"/>
@@ -109,18 +175,25 @@
   </xsl:template>
   
   
- 
   
-  <!--                  ref[@type='fulltext']              -->
-  <!--              simply insert ref contents             -->
-  <!--                    no LaTeX cite                    -->
+  <xd:doc>
+    <xd:desc>
+      <xd:p>ref[@type='fulltext']</xd:p>
+      <xd:p>simply insert ref contents</xd:p>
+      <xd:p>no LaTeX cite</xd:p>
+    </xd:desc>
+  </xd:doc>
   <xsl:template match="ref[@type='fulltext']" priority="2">
     <xsl:apply-templates/>
   </xsl:template>
   
   
   
-  <!-- ~~~~~~~~~~~~~ ref[@type='url'] ~~~~~~~~~~~~~~~~ -->
+  <xd:doc>
+    <xd:desc>
+      <xd:p>ref[@type='url']</xd:p>
+    </xd:desc>
+  </xd:doc>
   <xsl:template match="ref[@type='url']" priority="2">
     <xsl:text>\href</xsl:text>
     <xsl:text>{</xsl:text>
@@ -133,8 +206,12 @@
   
   
   
-  <!--               all standalone <ref>             -->
-  <!--              (only internal xrefs)             -->
+  <xd:doc>
+    <xd:desc>
+      <xd:p>all standalone ref</xd:p>
+      <xd:p>(only internal xrefs)</xd:p>
+    </xd:desc>
+  </xd:doc>
   <xsl:template match="ref[@type='internal']" priority="2">
     <xsl:text>\hyperref[</xsl:text>
     <xsl:sequence select="my:cleanref(@target)"/>
@@ -156,7 +233,10 @@
   
   
   
-  <!-- . . . . . . . . .  ref[parent::cit] . . . . . . . .-->
+  
+  <xd:doc>
+    <xd:desc>ref[parent::cit]</xd:desc>
+  </xd:doc>
   <xsl:template match="ref[parent::cit]">
     <!--Two possibilities:
       1. refers to EnM or Lat editions (incunabula)
