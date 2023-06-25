@@ -10,7 +10,7 @@
   
   <xd:doc scope="stylesheet">
     <xd:desc>
-      <xd:p><xd:b>Created on:</xd:b>2020-06-01</xd:p>
+      <xd:p><xd:b>Created on:</xd:b>2022-06-16</xd:p>
       <xd:p><xd:b>Author:</xd:b>nivaca</xd:p>
       <xd:p>This file contains standard templates for generating
         TeX from TEI.</xd:p>
@@ -90,8 +90,8 @@
   </xsl:template>
   
   
-
-
+  
+  
   <!--=============================================-->
   <!--             function my:cleantext           -->
   <!--=============================================-->
@@ -133,22 +133,31 @@
   <xd:doc>
     <xd:desc>Main template</xd:desc>
   </xd:doc>
-  <xsl:template match="/">
-\def\SMVersion{<xsl:value-of select="$combinedversionnumber"/>}
-\input{smpreamble.tex}
-% -----------------------------------------------
-\begin{document}
-
-\input{frontmatter.tex}
-\mainmatter
-\pagestyle{smtrad}
-\chapterstyle{smtrad}
-
-<xsl:apply-templates select="//body"/>
-
-\input{backmatter.tex}
-\end{document}
-% ===============================================
+  <xsl:template match="/">   
+    <xsl:text>\def\SMVersion{</xsl:text>
+    <xsl:if test="/TEI/teiHeader/fileDesc/editionStmt/edition/@n">
+      <xsl:value-of select="$combinedversionnumber"/>
+    </xsl:if>
+    <xsl:text>}</xsl:text>
+    
+    \input{smpreamble.tex}
+    % -----------------------------------------------
+    \begin{document}
+    
+    % \input{frontmatter.tex}
+    \mainmatter
+    \pagestyle{smtrad}
+    \chapterstyle{smtrad}
+    
+    <xsl:apply-templates select="//body"/>
+    
+    \chapter{Comentario}
+    <xsl:apply-templates select="//note" mode="commentary"/>
+    
+    
+    \input{backmatter.tex}
+    \end{document}
+    % ===============================================
   </xsl:template>
   
   
@@ -182,7 +191,6 @@
     <xsl:if test="@xml:id">
       <xsl:text>\label{</xsl:text>
       <xsl:value-of select="my:cleanref(@xml:id)"/>
-      <!--<xsl:value-of select="@xml:id"/>-->
       <xsl:text>}</xsl:text>
     </xsl:if>
     <xsl:text>&#10;&#10;</xsl:text>
@@ -202,22 +210,11 @@
     </xd:desc>
   </xd:doc>
   <xsl:template match="head">
-    <!--<xsl:apply-templates/>-->
+    <!-- do nothing here -->
   </xsl:template>
   
   
-  <xd:doc>
-    <xd:desc>
-      <xd:p>head[note]</xd:p>
-      <xd:p>head containing notes</xd:p>
-    </xd:desc>
-  </xd:doc>
-  <xsl:template match="head[note]">
-    <xsl:apply-templates/>
-  </xsl:template>
-
-
-
+  
   <!--=============================================-->
   <!--                    <p>                    -->
   <!--=============================================-->
@@ -231,7 +228,6 @@
     <xsl:if test="@xml:id">
       <xsl:text>\label{</xsl:text>
       <xsl:value-of select="my:cleanref(@xml:id)"/>
-      <!--<xsl:value-of select="@xml:id"/>-->
       <xsl:text>}</xsl:text>
     </xsl:if>
     <xsl:choose>
@@ -266,11 +262,11 @@
   
   <xd:doc>
     <xd:desc>
-      <xd:p>p[parent::note]</xd:p>
+      <xd:p>ab (mode="commentary")</xd:p>
       <xd:p>paragraphs inside notes</xd:p>
     </xd:desc>
   </xd:doc>
-  <xsl:template match="p[parent::note]">
+  <xsl:template match="ab[@type='comment']" priority="2" mode="commentary">
     <xsl:if test="@n >1 and not(@rend='nofirstlineindent')">
       <xsl:text>&#10;&#10;</xsl:text>
       <!--<xsl:text>\par\hspace*{14pt}</xsl:text>-->
@@ -294,24 +290,38 @@
       </xsl:otherwise>
     </xsl:choose>
   </xsl:template>
+  <!--<xsl:template match="ab[@type='comment']" priority="2" mode="commentary">
+    <xsl:text>&#10;&#10;</xsl:text>
+    <xsl:apply-templates/>
+    <xsl:text>&#10;&#10;</xsl:text>
+    </xsl:template>-->
   
+  <xd:doc>
+    <xd:desc>
+      <xd:p>ignore all other ab</xd:p>
+    </xd:desc>
+  </xd:doc>
+  <xsl:template match="ab" priority="0">
+    <!--<xsl:apply-templates/>-->
+  </xsl:template>
   
   
   <!-- - - - - - - - - - - - - - - - - - - - -->
   <!--                   <lb>                -->
   <!-- - - - - - - - - - - - - - - - - - - - -->
   
-    <xd:doc>
+  <xd:doc>
     <xd:desc>
       <xd:p>lb[@type='nonumber']</xd:p>
       <xd:p>line break with no numbering</xd:p>
     </xd:desc>
   </xd:doc>
   <xsl:template match="lb[@type='nonumber']" priority="2">
-    <xsl:text>\label{</xsl:text>
-    <xsl:value-of select="my:cleanref(@xml:id)"/>
-    <!--<xsl:value-of select="@xml:id"/>-->
-    <xsl:text>}</xsl:text>
+    <xsl:if test="@xml:id">
+      <xsl:text>\label{</xsl:text>
+      <xsl:value-of select="my:cleanref(@xml:id)"/>
+      <xsl:text>}</xsl:text>
+    </xsl:if>
   </xsl:template>
   
   
@@ -323,17 +333,19 @@
     </xd:desc>
   </xd:doc>
   <xsl:template match="lb[@n='1']">
-    <xsl:text>&#10;&#10;{\tiny\sidepar{\small¶</xsl:text>
+    <xsl:text>&#10;&#10;</xsl:text>
+    <xsl:text>\smparnum{</xsl:text>
     <xsl:value-of select="../@n"/>
-    <xsl:text>}}</xsl:text>
+    <xsl:text>}</xsl:text>
     <xsl:text>\hspace*{14pt}</xsl:text>
     <xsl:text>\Linum{</xsl:text>
     <xsl:value-of select="@n"/>
     <xsl:text>}</xsl:text>
-    <xsl:text>\label{</xsl:text>
-    <xsl:value-of select="my:cleanref(@xml:id)"/>
-    <!--<xsl:value-of select="@xml:id"/>-->
-    <xsl:text>}~</xsl:text>
+    <xsl:if test="@xml:id">
+      <xsl:text>\label{</xsl:text>
+      <xsl:value-of select="my:cleanref(@xml:id)"/>
+      <xsl:text>}</xsl:text>
+    </xsl:if>
     <xsl:apply-templates/>
   </xsl:template>
   
@@ -361,10 +373,11 @@
         <xsl:text>\hspace*{14pt}\Linum{</xsl:text>
         <xsl:value-of select="@n"/>
         <xsl:text>}</xsl:text>
-        <xsl:text>\label{</xsl:text>
-        <xsl:value-of select="my:cleanref(@xml:id)"/>
-        <!--<xsl:value-of select="@xml:id"/>-->
-        <xsl:text>}~</xsl:text>
+        <xsl:if test="@xml:id">
+          <xsl:text>\label{</xsl:text>
+          <xsl:value-of select="my:cleanref(@xml:id)"/>
+          <xsl:text>}</xsl:text>
+        </xsl:if>
         <xsl:apply-templates/>
       </xsl:when>
       <!--for all others: -->
@@ -375,10 +388,11 @@
         <xsl:text>\Linum{</xsl:text>
         <xsl:value-of select="@n"/>
         <xsl:text>}</xsl:text>
-        <xsl:text>\label{</xsl:text>
-        <xsl:value-of select="my:cleanref(@xml:id)"/>
-        <!--<xsl:value-of select="@xml:id"/>-->
-        <xsl:text>}~</xsl:text>
+        <xsl:if test="@xml:id">
+          <xsl:text>\label{</xsl:text>
+          <xsl:value-of select="my:cleanref(@xml:id)"/>
+          <xsl:text>}</xsl:text>
+        </xsl:if>
         <xsl:apply-templates/>
       </xsl:otherwise>
     </xsl:choose>
@@ -442,7 +456,7 @@
   
   
   <!--=============================================-->
-  <!--                     <name>                  -->
+  <!--                 <persName>                  -->
   <!--=============================================-->
   <xd:doc>
     <xd:desc>
@@ -451,7 +465,7 @@
         and creates an index entry</xd:p>
     </xd:desc>
   </xd:doc>
-  <xsl:template match="name">
+  <xsl:template match="persName|name">
     <xsl:text>\Nombre{</xsl:text>
     <xsl:apply-templates/>
     <xsl:text>}</xsl:text>
@@ -488,7 +502,6 @@
     <xsl:if test="@xml:id">
       <xsl:text>\label{</xsl:text>
       <xsl:value-of select="my:cleanref(@xml:id)"/>
-      <!--<xsl:value-of select="@xml:id"/>-->
       <xsl:text>}</xsl:text>
     </xsl:if>
     <xsl:apply-templates/>
@@ -517,16 +530,16 @@
   <!--=============================================-->
   <!--                    <lg>                     -->
   <!--=============================================-->
-    <xd:doc>
+  <xd:doc>
     <xd:desc>
       <xd:p>lg</xd:p>
       <xd:p>line group template uses the myverse environment</xd:p>
     </xd:desc>
   </xd:doc>
   <xsl:template match="lg">
-    <xsl:text>\begin{myverse}</xsl:text>
+    <xsl:text>\begin{verse}[.7\textwidth]</xsl:text>
     <xsl:apply-templates/>
-    <xsl:text>\end{myverse}</xsl:text>
+    <xsl:text>\end{verse}</xsl:text>
   </xsl:template>
   
   
@@ -538,9 +551,9 @@
     <xd:desc>
       <xd:p>hi</xd:p>
       <xd:p>highlight template,
-      takes care of small caps, bold face,
-      superscript text, upshape text,
-      and defaults to italic text</xd:p>
+        takes care of small caps, bold face,
+        superscript text, upshape text,
+        and defaults to italic text</xd:p>
     </xd:desc>
   </xd:doc>
   <xsl:template match="hi">
@@ -639,25 +652,37 @@
   <!--=============================================-->
   <xd:doc>
     <xd:desc>
-      <xd:p>note</xd:p>
-      <xd:p>inserts a \notenum command
-      and then produced the note content</xd:p>
+      <xd:p>note mode=commentary</xd:p>
+      <xd:p>inserts a \sidepar command
+        with the commentary reference,
+        and then produces the note content</xd:p>
     </xd:desc>
   </xd:doc>
-  <xsl:template match="note">
-    <!--<!-\-check if two notes go together-\->
-      <xsl:if test="preceding-sibling::node()[not(self::text()[normalize-space()=''])][1][self::note]">
-      <xsl:text>\notesep</xsl:text>
-      </xsl:if>-->
+  <xsl:template match="note" mode="commentary">
     <xsl:text>&#10;&#10;</xsl:text>
-    <xsl:text>\notenum</xsl:text>
+    <!-- test if this is the the first note in the paragraph-->
+    <xsl:if test="not(preceding-sibling::note)">
+      <xsl:text>\smnoteparnum{</xsl:text>
+      <xsl:value-of select="ancestor::p[1]/@n"/>
+      <xsl:text>.</xsl:text>
+      <xsl:value-of select="preceding-sibling::lb[1]/@n"/>
+      <xsl:text>}</xsl:text>
+    </xsl:if>
+    <!-- -->
+    <!-- print the note lemma -->
+    <xsl:text>\textbf{</xsl:text>
+    <xsl:value-of select="@ana"/>
+    <xsl:text>}:\space</xsl:text>
     <!--insert label-->
-    <xsl:text>{</xsl:text>
-    <xsl:value-of select="my:cleanref(@xml:id)"/>
-    <!--<xsl:value-of select="@xml:id"/>-->
-    <xsl:text>}</xsl:text>
-    <xsl:apply-templates/>
+    <xsl:if test="@xml:id">
+      <xsl:text>\label{</xsl:text>
+      <xsl:value-of select="@xml:id"/>
+      <xsl:text>}</xsl:text>
+    </xsl:if>
+    <xsl:apply-templates mode="commentary"/>
+    <xsl:text>&#10;</xsl:text>
   </xsl:template>
+  
   
   
   <!--=============================================-->
@@ -721,6 +746,105 @@
   
   
   <!--=============================================-->
+  <!--                prosopography                -->
+  <!--=============================================-->
+  <xd:doc>
+    <xd:desc>
+      <xd:p>listPerson</xd:p> 
+      <xd:p>main listPerson divisions</xd:p>
+    </xd:desc>
+  </xd:doc>
+  <xsl:template match="listPerson">
+    <xsl:text>&#xA;&#xA;</xsl:text>
+    <xsl:text>\section{</xsl:text>
+    <xsl:value-of select="@type"/>
+    <xsl:text>}</xsl:text>
+    <xsl:text>&#xA;&#xA;</xsl:text>
+    <xsl:apply-templates/>
+    <xsl:text>&#xA;&#xA;</xsl:text>
+    
+    
+    
+    <xsl:text>\begin{tabular}{ll}</xsl:text>
+    <xsl:text>&#xA;</xsl:text>
+    
+    <xsl:if test="persName[@xml:lang='es']">
+      <xsl:text>\textbf{</xsl:text>
+      <xsl:value-of select="persName[@xml:lang='es']"/>
+      <xsl:text>} &amp; \\</xsl:text>
+      <xsl:text>&#xA;</xsl:text>
+    </xsl:if>
+    
+    <xsl:if test="persName[@xml:lang='eng']">
+      <xsl:value-of select="persName[@xml:lang='eng']"/>
+      <xsl:text> (inglés) \\</xsl:text>
+      <xsl:text>&#xA;</xsl:text>
+    </xsl:if>
+    
+    <xsl:if test="persName[@xml:lang='lat']">
+      <xsl:value-of select="persName[@xml:lang='lat']"/>
+      <xsl:text> (latín) \\</xsl:text>
+      <xsl:text>&#xA;</xsl:text>
+    </xsl:if>
+    
+    <xsl:choose>
+      <xsl:when test="floruit">
+        <xsl:text>fl. &amp; </xsl:text>
+        <xsl:value-of select="floruit"/>
+        <xsl:text> \\</xsl:text>
+        <xsl:text>&#xA;</xsl:text>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:if test="birth">
+          <xsl:text>Nacido en: &amp; </xsl:text>
+          <xsl:value-of select="birth"/>
+          <xsl:text> \\</xsl:text>
+          <xsl:text>&#xA;</xsl:text>
+        </xsl:if>
+        <xsl:if test="death">
+          <xsl:text>Muerto en: &amp; </xsl:text>
+          <xsl:value-of select="death"/>
+          <xsl:text> \\</xsl:text>
+          <xsl:text>&#xA;</xsl:text>
+        </xsl:if>
+      </xsl:otherwise>
+    </xsl:choose>
+    
+    <xsl:if test="idno[@type='VIAF']">
+      <xsl:variable name="viaf-id">
+        <xsl:value-of select="idno[@type='VIAF']"/>
+      </xsl:variable>
+      <xsl:text>\textsc{viaf:} &amp; </xsl:text>
+      <xsl:text>\url</xsl:text>
+      <xsl:text>{</xsl:text>
+      <xsl:value-of select="concat('https://viaf.org/viaf/', $viaf-id, '/')"/>
+      <xsl:text>}</xsl:text>
+      <xsl:text> \\</xsl:text>
+      <xsl:text>&#xA;</xsl:text>
+    </xsl:if>
+    
+    <xsl:if test="idno[@type='wikidata-id']">
+      <xsl:variable name="wikidata-id">
+        <xsl:value-of select="idno[@type='wikidata-id']"/>
+      </xsl:variable>
+      <xsl:text>Wikidata: &amp; </xsl:text>
+      <xsl:text>\url</xsl:text>
+      <xsl:text>{</xsl:text>
+      <xsl:value-of select="concat('https://www.wikidata.org/wiki/', $wikidata-id)"/>
+      <xsl:text>}</xsl:text>
+      <xsl:text> \\</xsl:text>
+      <xsl:text>&#xA;</xsl:text>
+    </xsl:if>
+    
+    <xsl:text>\end{tabular}</xsl:text>
+    <xsl:text>&#xA;</xsl:text>
+    <xsl:text>\bigskip</xsl:text>
+    <xsl:text>&#xA;&#xA;</xsl:text>
+  </xsl:template>
+  
+  
+  
+  <!--=============================================-->
   <!--           miscellaneous elements            -->
   <!--=============================================-->
   
@@ -730,7 +854,7 @@
       <xd:p>this is required by LaTeX sometimes</xd:p> 
     </xd:desc>
   </xd:doc>
-  <xsl:template match="ab[@ana='leavevmode']">
+  <xsl:template match="ab[@ana='leavevmode']" priority="2">
     <xsl:text>\leavevmode</xsl:text>
   </xsl:template>
   
@@ -742,7 +866,7 @@
       <xd:p>forced new line</xd:p>
     </xd:desc>
   </xd:doc>
-  <xsl:template match="ab[@ana='nl']">
+  <xsl:template match="ab[@ana='nl']" priority="2">
     <xsl:text>\par</xsl:text>
   </xsl:template>
   
