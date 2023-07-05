@@ -18,22 +18,20 @@
   </xd:doc>  
   
   
-  
-  <!--=============================================-->
-  <!--             function my:cleanref            -->
-  <!--=============================================-->
+  <!--
+  <!-\-=============================================-\->
+  <!-\-             function my:cleanref            -\->
+  <!-\-=============================================-\->
   <xd:doc>
     <xd:desc>function my:cleanref</xd:desc>
-    <xd:desc>Changes '_' into '-' in xml:id, needed for LaTeX,
-      and removes '#' chars.</xd:desc>
+    <xd:desc>Removes '#' chars.</xd:desc>
     <xd:param name="input"/>
   </xd:doc>
   <xsl:function name="my:cleanref" as="xs:string">
     <xsl:param name="input"/>
-    <xsl:variable name="temp" select="replace($input, '_', '-')"/>
-    <xsl:sequence select="replace($temp, '#', '')"/>
+    <xsl:sequence select="replace($input, '#', '')"/>
   </xsl:function>
-  
+  -->
   
   
   <!--=============================================-->
@@ -41,8 +39,7 @@
   <!--=============================================-->
   <xd:doc>
     <xd:desc>function my:cleanurl</xd:desc>
-    <xd:desc>Protects URLs for LaTeX:
-      escapes # and % chars.</xd:desc>
+    <xd:desc>Protects URLs for LaTeX: escapes # and % chars.</xd:desc>
     <xd:param name="input"/>
   </xd:doc>
   <xsl:function name="my:cleanurl" as="xs:string">
@@ -60,7 +57,7 @@
   <xd:doc>
     <xd:desc>
       <xd:p>function my:processref</xd:p>
-      <xd:p>helps process refs according to type</xd:p>
+      <xd:p>helps process refs according to type:</xd:p>
       <xd:ul>
         <li>a:        \citeauthor</li>
         <li>p:        \parencite</li>
@@ -208,8 +205,8 @@
   
   <xd:doc>
     <xd:desc>
-      <xd:p>all standalone ref</xd:p>
-      <xd:p>(only internal xrefs)</xd:p>
+      <xd:p>all standalone references</xd:p>
+      <xd:p>(only internal cross-references)</xd:p>
     </xd:desc>
   </xd:doc>
   <xsl:template match="ref[@type='internal']" priority="2">
@@ -239,8 +236,8 @@
   </xd:doc>
   <xsl:template match="ref[parent::cit]">
     <!--Two possibilities:
-      1. refers to EnM or Lat editions (incunabula)
-      2. refers to a bibliographic entry-->
+      1. refers to EnM or Latin editions (incunabula)
+      2. refers to a bibliographic entry (in BibTradSM.bib) -->
     <xsl:choose>
       <!--                                                        -->
       <!--                1. refers to incunabula                 -->
@@ -302,7 +299,7 @@
       <xsl:when test="starts-with(@corresp, 'vulgClem')">
         <xsl:text>\VulgCit</xsl:text>
         <xsl:text>{</xsl:text>
-        <xsl:sequence select="my:cleanref(@target)"/>
+        <xsl:sequence select="my:cleanurl(@target)"/>
         <xsl:text>}</xsl:text>
         <xsl:choose>
           <!--select @rend if present-->
