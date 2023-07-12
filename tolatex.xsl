@@ -205,7 +205,7 @@
     <xsl:copy-of select="head"/>
     <xsl:text>}</xsl:text>
     <xsl:if test="@xml:id">
-      <xsl:text>\label{</xsl:text>
+      <xsl:text>\smlabel{</xsl:text>
       <xsl:value-of select="my:cleanref(@xml:id)"/>
       <xsl:text>}</xsl:text>
     </xsl:if>
@@ -246,7 +246,7 @@
       <xsl:value-of select="my:cleanref(@xml:id)"/>
       <xsl:text> starts here ↓</xsl:text>
       <!-- -->
-      <xsl:text>\label{</xsl:text>
+      <xsl:text>\smlabel{</xsl:text>
       <xsl:value-of select="my:cleanref(@xml:id)"/>
       <xsl:text>}</xsl:text>
     </xsl:if>
@@ -289,16 +289,19 @@
 
   <xd:doc>
     <xd:desc>
-      <xd:p>ab (mode="commentary")</xd:p>
+      <xd:p>ab (mode=commentary)</xd:p>
       <xd:p>paragraphs inside notes</xd:p>
     </xd:desc>
   </xd:doc>
   <xsl:template match="ab[parent::note]" priority="2" mode="commentary">
-    <xsl:if test="@n > 1 and not(@rend = 'nofirstlineindent')">
-      <xsl:text>&#10;&#10;</xsl:text>
-      <!--<xsl:text>\par\hspace*{14pt}</xsl:text>-->
-      <xsl:text>\parindent14pt</xsl:text>
-      <xsl:text>&#10;&#10;</xsl:text>
+    <xsl:if test="@n > 1">
+      <xsl:text>\absep{}</xsl:text>
+      <!--insert label-->
+      <xsl:if test="@xml:id">
+        <xsl:text>\smlabel{</xsl:text>
+        <xsl:value-of select="@xml:id"/>
+        <xsl:text>}</xsl:text>
+      </xsl:if>
     </xsl:if>
     <xsl:choose>
       <!--indented paragraph-->
@@ -309,15 +312,9 @@
       </xsl:when>
       <xsl:otherwise>
         <xsl:apply-templates/>
-        <!--only insert \par if next paragraph 
-          doesn't include a quote-->
-        <xsl:if test="not(following-sibling::p[descendant::quote])">
-          <xsl:text>\par</xsl:text>
-        </xsl:if>
       </xsl:otherwise>
     </xsl:choose>
   </xsl:template>
-
 
   <xd:doc>
     <xd:desc>
@@ -341,7 +338,7 @@
   </xd:doc>
   <xsl:template match="lb[@type = 'nonumber']" priority="2">
     <xsl:if test="@xml:id">
-      <xsl:text>\label{</xsl:text>
+      <xsl:text>\smlabel{</xsl:text>
       <xsl:value-of select="my:cleanref(@xml:id)"/>
       <xsl:text>}</xsl:text>
     </xsl:if>
@@ -361,7 +358,7 @@
     <xsl:value-of select="@n"/>
     <xsl:text>}</xsl:text>
     <xsl:if test="@xml:id">
-      <xsl:text>\label{</xsl:text>
+      <xsl:text>\smlabel{</xsl:text>
       <xsl:value-of select="my:cleanref(@xml:id)"/>
       <xsl:text>}</xsl:text>
     </xsl:if>
@@ -395,7 +392,7 @@
         <xsl:value-of select="@n"/>
         <xsl:text>}</xsl:text>
         <xsl:if test="@xml:id">
-          <xsl:text>\label{</xsl:text>
+          <xsl:text>\smlabel{</xsl:text>
           <xsl:value-of select="my:cleanref(@xml:id)"/>
           <xsl:text>}</xsl:text>
         </xsl:if>
@@ -410,7 +407,7 @@
         <xsl:value-of select="@n"/>
         <xsl:text>}</xsl:text>
         <xsl:if test="@xml:id">
-          <xsl:text>\label{</xsl:text>
+          <xsl:text>\smlabel{</xsl:text>
           <xsl:value-of select="my:cleanref(@xml:id)"/>
           <xsl:text>}</xsl:text>
         </xsl:if>
@@ -521,7 +518,7 @@
       </xsl:text>
     </xsl:if>
     <xsl:if test="@xml:id">
-      <xsl:text>\label{</xsl:text>
+      <xsl:text>\smlabel{</xsl:text>
       <xsl:value-of select="my:cleanref(@xml:id)"/>
       <xsl:text>}</xsl:text>
     </xsl:if>
@@ -541,7 +538,7 @@
     <xsl:value-of select="@n"/>
     <xsl:text>}</xsl:text>
     <xsl:if test="@xml:id">
-      <xsl:text>\label{</xsl:text>
+      <xsl:text>\smlabel{</xsl:text>
       <xsl:value-of select="my:cleanref(@xml:id)"/>
       <!--<xsl:value-of select="@xml:id"/>-->
       <xsl:text>}</xsl:text>
@@ -665,13 +662,10 @@
   <xd:doc>
     <xd:desc>
       <xd:p>supplied</xd:p>
-      <xd:p>@ana='eq' produces: [$=$ ]</xd:p>
-      <xd:p>@ana='q' uses parenthesis instead of brackets</xd:p>
-      <xd:p>@ana='peq' produces: ($=$ )</xd:p>
+      <xd:p>@rend='eq' produces: [$=$ ]</xd:p>
+      <xd:p>@rend='q' uses parenthesis instead of brackets</xd:p>
+      <xd:p>@rend='peq' produces: ($=$ )</xd:p>
     </xd:desc>
-  </xd:doc>
-  <xd:doc>
-    <xd:desc> @ana='peq' produces: ($=$ ) </xd:desc>
   </xd:doc>
   <xsl:template match="supplied">
     <xsl:choose>
@@ -680,19 +674,19 @@
       </xsl:when>
       <xsl:otherwise>
         <xsl:choose>
-          <xsl:when test="@ana = 'p' or @ana = 'peq'">
+          <xsl:when test="@rend = 'p' or @rend = 'peq'">
             <xsl:text>(</xsl:text>
           </xsl:when>
           <xsl:otherwise>
             <xsl:text>[</xsl:text>
           </xsl:otherwise>
         </xsl:choose>
-        <xsl:if test="@ana = 'p' or @ana = 'peq'">
+        <xsl:if test="@rend = 'p' or @rend = 'peq'">
           <xsl:text>$=$</xsl:text>
         </xsl:if>
         <xsl:apply-templates/>
         <xsl:choose>
-          <xsl:when test="@ana = 'p' or @ana = 'peq'">
+          <xsl:when test="@rend = 'p' or @rend = 'peq'">
             <xsl:text>)</xsl:text>
           </xsl:when>
           <xsl:otherwise>
@@ -711,8 +705,7 @@
   <xd:doc>
     <xd:desc xml:lang="en">
       <xd:p>note mode=commentary</xd:p>
-      <xd:p>inserts a \sidepar command with the commentary reference, and then
-        produces the note content</xd:p>
+      <xd:p>Creates a note in the Commentary section</xd:p>
       <xd:p>
         A comment on the test:
         <![CDATA[
@@ -735,52 +728,61 @@
     </xd:desc>
   </xd:doc>
   <xsl:template match="note" mode="commentary">
-    <xsl:text>&#10;&#10;</xsl:text>
-    <!-- test if this is the the first note in the paragraph-->
-    <xsl:if test="generate-id() = generate-id(ancestor::p[1]/note[1])">
-      <!--<xsl:text>\smnoteparnum{</xsl:text>
-      <xsl:value-of select="ancestor::p[1]/@n"/>
-      <xsl:text>.</xsl:text>
+    <xsl:if test="not(@ana='fn')">
+      <xsl:text>&#10;&#10;</xsl:text>
+      <!-- test if this is the the first note in the paragraph-->
+      <xsl:if test="generate-id() = generate-id(ancestor::p[1]/note[1])">
+        <xsl:text>\section{¶</xsl:text>
+        <xsl:value-of select="ancestor::p[1]/@n"/>
+        <xsl:text>.</xsl:text>
+        <xsl:value-of select="preceding::lb[1]/@n"/>
+        <xsl:text>}</xsl:text>
+      </xsl:if>
+      <!-- print the line number -->
+      <xsl:text>\parindent14pt</xsl:text>
+      <xsl:text>\Linum{</xsl:text>
       <xsl:value-of select="preceding::lb[1]/@n"/>
-      <xsl:text>}</xsl:text>-->
-      <xsl:text>\section{¶</xsl:text>
-      <xsl:value-of select="ancestor::p[1]/@n"/>
-      <xsl:text>.</xsl:text>
-      <xsl:value-of select="preceding::lb[1]/@n"/>
-      <xsl:text>}</xsl:text>
+      <xsl:text>}~</xsl:text>
+      <!-- print the note lemma -->
+      <xsl:text>\textbf{</xsl:text>
+      <xsl:value-of select="@ana"/>
+      <xsl:text>}:\space</xsl:text>
+      <!--insert label-->
+      <xsl:if test="@xml:id">
+        <xsl:text>\smlabel{</xsl:text>
+        <xsl:value-of select="@xml:id"/>
+        <xsl:text>}</xsl:text>
+      </xsl:if>
+      <xsl:apply-templates mode="commentary"/>
+      <xsl:text>&#10;</xsl:text>
     </xsl:if>
-    <!--    -->
-<!--    <xsl:text>\makeevenhead{smtrad}{}{\leftmark\space(¶</xsl:text>
-    <xsl:value-of select="ancestor::p[1]/@n"/>
-    <xsl:text>.</xsl:text>
-    <xsl:value-of select="preceding::lb[1]/@n"/>
-    <xsl:text>)}{}</xsl:text>
-    <xsl:text>\makeoddhead{smtrad}{}{\rightmark\space(¶</xsl:text>
-    <xsl:value-of select="ancestor::p[1]/@n"/>
-    <xsl:text>.</xsl:text>
-    <xsl:value-of select="preceding::lb[1]/@n"/>
-    <xsl:text>)}{}</xsl:text>-->
-    <!--    -->
-    <!-- print the line number -->
-    <xsl:text>\Linum{</xsl:text>
-    <xsl:value-of select="preceding::lb[1]/@n"/>
-    <xsl:text>}</xsl:text>
-    <!-- print the note lemma -->
-    <xsl:text>\textbf{</xsl:text>
-    <xsl:value-of select="@ana"/>
-    <xsl:text>}:\space</xsl:text>
-    <!--insert label-->
-    <xsl:if test="@xml:id">
-      <xsl:text>\label{</xsl:text>
-      <xsl:value-of select="@xml:id"/>
-      <xsl:text>}</xsl:text>
-    </xsl:if>
-    <xsl:apply-templates mode="commentary"/>
-    <xsl:text>&#10;</xsl:text>
   </xsl:template>
+  
+  
+  <xd:doc>
+    <xd:desc xml:lang="en">
+      <xd:p>note (default mode)</xd:p>
+      <xd:p>Inserts a footnote.</xd:p>
+    </xd:desc>
+  </xd:doc>
+  <xsl:template match="note" mode="#default">
+    <xsl:if test="@ana='fn'">
+      <xsl:text>\footnote{</xsl:text>
+      <!--insert label-->
+      <xsl:if test="@xml:id">
+        <xsl:text>\smlabel{</xsl:text>
+        <xsl:value-of select="@xml:id"/>
+        <xsl:text>}</xsl:text>
+      </xsl:if>
+      <xsl:apply-templates/>
+      <xsl:text>}</xsl:text>
+    </xsl:if>
+  </xsl:template>
+  
+  
 
-
-
+  
+  
   <!--=============================================-->
   <!--                 <caesura>                   -->
   <!--=============================================-->
@@ -791,6 +793,20 @@
   </xd:doc>
   <xsl:template match="caesura">
     <xsl:text>\caesura{}</xsl:text>
+  </xsl:template>
+
+
+
+  <!--=============================================-->
+  <!--                 <seg @type=latex>                   -->
+  <!--=============================================-->
+  <xd:doc>
+    <xd:desc>
+      <xd:p>seg @type=latex</xd:p>
+    </xd:desc>
+  </xd:doc>
+  <xsl:template match="seg[@type='latex']">
+    <xsl:apply-templates/>
   </xsl:template>
 
 

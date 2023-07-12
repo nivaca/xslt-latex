@@ -92,7 +92,12 @@
     <!--insert text-->
     <xsl:text>{</xsl:text>
     <xsl:if test="@ana='lexeme'">
-      <xsl:text>\lexquote{</xsl:text>
+      <xsl:text>\lexquote</xsl:text>
+      <!--test if it should be indexed-->
+      <xsl:if test="@xml:lang='lat'">
+        <xsl:text>*</xsl:text>
+      </xsl:if>
+      <xsl:text>{</xsl:text>
     </xsl:if>
     <xsl:apply-templates/>
     <xsl:if test="@ana='lexeme'">
@@ -123,7 +128,14 @@
   <xsl:template match="cit[child::quote]">
     <xsl:text>\MyC</xsl:text>
     <xsl:text>{</xsl:text>
-    <xsl:sequence select="my:lang(quote/@xml:lang)"/>
+    <xsl:choose>
+      <xsl:when test="quote/@xml:lang">
+        <xsl:sequence select="my:lang(quote/@xml:lang)"/>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:text>spanish</xsl:text>
+      </xsl:otherwise>
+    </xsl:choose>
     <xsl:text>}</xsl:text>
     <!--insert label-->
     <xsl:text>{</xsl:text>
@@ -135,6 +147,7 @@
     <xsl:text>{</xsl:text>
     <xsl:apply-templates select="quote"/>
     <xsl:choose>
+      <!-- test if a translation is provided -->
       <xsl:when test="q">
         <!--insert comma-->
         <xsl:text>,</xsl:text>
