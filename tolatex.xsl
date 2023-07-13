@@ -155,7 +155,8 @@
 </xsl:if>
 <xsl:text>}</xsl:text>
 
-\input{smpreamble.tex}
+\documentclass{smbook}
+<!--\input{smpreamble.tex}-->
 
 \begin{document} % ----------------------------------
 
