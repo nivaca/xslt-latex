@@ -191,15 +191,63 @@
       <xd:p>ref[@type='url']</xd:p>
     </xd:desc>
   </xd:doc>
+<!--  <xsl:template match="ref[@type='url']" priority="2">
+    <xsl:variable name="mytarget">
+      <xsl:value-of select="my:cleanurl(@target)"/>
+    </xsl:variable>
+    <xsl:choose>
+      <!-\- test if ref has any content or @rend -\->
+      <xsl:when test="exists(node()) or @rend">
+        <xsl:text>\href</xsl:text>
+        <xsl:text>{</xsl:text>
+        <xsl:sequence select="$mytarget"/>
+        <xsl:text>}</xsl:text>
+        <xsl:text>{</xsl:text>
+        <xsl:choose>
+          <xsl:when test="exists(node())">
+            <xsl:apply-templates/>
+          </xsl:when>
+          <xsl:otherwise>
+            <xsl:value-of select="@rend"/>
+          </xsl:otherwise>
+        </xsl:choose>
+        <xsl:text>}</xsl:text>
+      </xsl:when>
+      <!-\- otherwise use the target value -\->
+      <xsl:otherwise>
+        <xsl:text>\url</xsl:text>
+        <xsl:text>{</xsl:text>
+        <xsl:sequence select="$mytarget"/>
+        <xsl:text>}</xsl:text>
+      </xsl:otherwise>
+    </xsl:choose>
+  </xsl:template>-->
   <xsl:template match="ref[@type='url']" priority="2">
-    <xsl:text>\href</xsl:text>
-    <xsl:text>{</xsl:text>
-    <xsl:sequence select="my:cleanurl(@target)"/>
-    <xsl:text>}</xsl:text>
-    <xsl:text>{</xsl:text>
-    <xsl:apply-templates/>
-    <xsl:text>}</xsl:text>
+    <xsl:variable name="mytarget" select="my:cleanurl(@target)"/>
+    <xsl:variable name="hasContent" select="exists(node()) or @rend"/>
+    <xsl:choose>
+      <xsl:when test="$hasContent">
+        <xsl:text>\href{</xsl:text>
+        <xsl:sequence select="$mytarget"/>
+        <xsl:text>}{</xsl:text>
+        <xsl:choose>
+          <xsl:when test="exists(node())">
+            <xsl:apply-templates/>
+          </xsl:when>
+          <xsl:otherwise>
+            <xsl:value-of select="@rend"/>
+          </xsl:otherwise>
+        </xsl:choose>
+        <xsl:text>}</xsl:text>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:text>\url{</xsl:text>
+        <xsl:sequence select="$mytarget"/>
+        <xsl:text>}</xsl:text>
+      </xsl:otherwise>
+    </xsl:choose>
   </xsl:template>
+  
   
   
   

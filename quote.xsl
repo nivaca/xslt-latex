@@ -42,6 +42,7 @@
       <xsl:otherwise>english</xsl:otherwise>
     </xsl:choose>
   </xsl:template>
+  
   <xd:doc>
     <xd:desc>my:lang function</xd:desc>
     <xd:param name="lname"/>
@@ -70,9 +71,9 @@
       </xd:ul>
     </xd:desc>
   </xd:doc>
-  <xsl:template match="foreign | mentioned | gloss | q[not(parent::cit)]">
+<!--  <xsl:template match="foreign | mentioned | gloss | q[not(parent::cit)]">
     <xsl:text>\MyQ</xsl:text>
-    <!--insert lang-->
+    <!-\-insert lang-\->
     <xsl:text>{</xsl:text>
     <xsl:choose>
       <xsl:when test="@xml:lang or name(.)='foreign'">
@@ -83,17 +84,45 @@
       </xsl:otherwise>
     </xsl:choose>
     <xsl:text>}</xsl:text>
-    <!--insert label-->
+    <!-\-insert label-\->
     <xsl:text>{</xsl:text>
     <xsl:if test="@xml:id">
       <xsl:value-of select="@xml:id"/>
     </xsl:if>
     <xsl:text>}</xsl:text>
-    <!--insert text-->
+    <!-\-insert text-\->
     <xsl:text>{</xsl:text>
     <xsl:if test="@ana='lexeme'">
       <xsl:text>\lexquote</xsl:text>
-      <!--test if it should be indexed-->
+      <!-\-test if it should be indexed-\->
+      <xsl:if test="@xml:lang='lat'">
+        <xsl:text>*</xsl:text>
+      </xsl:if>
+      <xsl:text>{</xsl:text>
+    </xsl:if>
+    <xsl:apply-templates/>
+    <xsl:if test="@ana='lexeme'">
+      <xsl:text>}</xsl:text>
+    </xsl:if>
+    <xsl:text>}</xsl:text>
+  </xsl:template>-->
+  <xsl:template match="foreign | mentioned | gloss | q[not(parent::cit)]">
+    <xsl:text>\MyQ</xsl:text>
+    <!-- Insert lang -->
+    <xsl:text>{</xsl:text>
+    <xsl:variable name="lang" 
+      select="if (@xml:lang or name(.)='foreign') then my:lang(@xml:lang) else 'spanish'"/>
+    <xsl:value-of select="$lang"/>
+    <xsl:text>}</xsl:text>
+    <!-- Insert label -->
+    <xsl:text>{</xsl:text>
+    <xsl:value-of select="@xml:id"/>
+    <xsl:text>}</xsl:text>
+    <!-- Insert text -->
+    <xsl:text>{</xsl:text>
+    <xsl:if test="@ana='lexeme'">
+      <xsl:text>\lexquote</xsl:text>
+      <!-- Test if it should be indexed -->
       <xsl:if test="@xml:lang='lat'">
         <xsl:text>*</xsl:text>
       </xsl:if>
@@ -125,7 +154,7 @@
       </xd:ul>
     </xd:desc>
   </xd:doc>
-  <xsl:template match="cit[child::quote]">
+<!--  <xsl:template match="cit[child::quote]">
     <xsl:text>\MyC</xsl:text>
     <xsl:text>{</xsl:text>
     <xsl:choose>
@@ -137,34 +166,34 @@
       </xsl:otherwise>
     </xsl:choose>
     <xsl:text>}</xsl:text>
-    <!--insert label-->
+    <!-\-insert label-\->
     <xsl:text>{</xsl:text>
     <xsl:if test="quote[@xml:id]">
       <xsl:value-of select="quote/@xml:id"/>
     </xsl:if>
     <xsl:text>}</xsl:text>
-    <!--insert original quote-->
+    <!-\-insert original quote-\->
     <xsl:text>{</xsl:text>
     <xsl:apply-templates select="quote"/>
     <xsl:choose>
-      <!-- test if a translation is provided -->
+      <!-\- test if a translation is provided -\->
       <xsl:when test="q">
-        <!--insert comma-->
+        <!-\-insert comma-\->
         <xsl:text>,</xsl:text>
         <xsl:text>}</xsl:text>
-        <!--insert q trans.-->
+        <!-\-insert q trans.-\->
         <xsl:text>{</xsl:text>
         <xsl:apply-templates select="q"/>
         <xsl:text>}</xsl:text>
       </xsl:when>
       <xsl:otherwise>
-        <!--simply close group 
-          and create an empy one -->
+        <!-\-simply close group 
+          and create an empy one -\->
         <xsl:text>}</xsl:text>
         <xsl:text>{}</xsl:text>
       </xsl:otherwise>
     </xsl:choose>
-    <!--insert ref-->
+    <!-\-insert ref-\->
     <xsl:text>{</xsl:text>
     <xsl:if test="ref">
       <xsl:text>(</xsl:text>
@@ -172,6 +201,42 @@
       <xsl:text>)</xsl:text>
     </xsl:if>
     <xsl:text>}</xsl:text>
+  </xsl:template>-->
+  <xsl:template match="cit[child::quote]">
+    <xsl:text>\MyC</xsl:text>
+    <!-- Insert lang -->
+    <xsl:text>{</xsl:text>
+    <xsl:variable name="lang" select="if (quote/@xml:lang) then my:lang(quote/@xml:lang) else 'spanish'"/>
+    <xsl:value-of select="$lang"/>
+    <xsl:text>}</xsl:text>
+    <!-- Insert label -->
+    <xsl:text>{</xsl:text>
+    <xsl:value-of select="quote/@xml:id"/>
+    <xsl:text>}</xsl:text>
+    <!-- Insert original quote -->
+    <xsl:text>{</xsl:text>
+    <xsl:apply-templates select="quote"/>
+    <xsl:choose>
+      <!-- Test if a translation is provided -->
+      <xsl:when test="q">
+        <!-- Insert comma -->
+        <xsl:text>,</xsl:text>
+        <xsl:text>}</xsl:text>
+        <!-- Insert q trans. -->
+        <xsl:text>{</xsl:text>
+        <xsl:apply-templates select="q"/>
+        <xsl:text>}</xsl:text>
+      </xsl:when>
+      <xsl:otherwise>
+        <!-- Simply close group and create an empty one -->
+        <xsl:text>}</xsl:text>
+        <xsl:text>{}</xsl:text>
+      </xsl:otherwise>
+    </xsl:choose>
+    <!-- Insert ref -->
+    <xsl:text>({</xsl:text>
+    <xsl:apply-templates select="ref"/>
+    <xsl:text>})</xsl:text>
   </xsl:template>
   
   

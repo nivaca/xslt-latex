@@ -9,6 +9,7 @@
   <xd:doc scope="stylesheet">
     <xd:desc>
       <xd:p><xd:b>Created on:</xd:b>2022-06-16</xd:p>
+      <xd:p><xd:b>Created on:</xd:b>2023-07-16</xd:p>
       <xd:p><xd:b>Author:</xd:b>nivaca</xd:p>
       <xd:p>This file contains standard templates for generating TeX from
         TEI.</xd:p>
@@ -115,9 +116,10 @@
   </xd:doc>
   <xsl:function name="my:cleantext">
     <xsl:param name="input"/>
-    <xsl:variable name="step1" select="replace($input, '\n+', ' ')"/>
+    <!--<xsl:variable name="step1" select="replace($input, '\n+', ' ')"/>
     <xsl:variable name="step2" select="normalize-space($step1)"/>
-    <xsl:sequence select="$step2"/>
+    <xsl:sequence select="$step2"/>-->
+    <xsl:sequence select="replace(normalize-space($input), '\n+', ' ')"/>
   </xsl:function>
 
 
@@ -132,8 +134,9 @@
   </xd:doc>
   <xsl:function name="my:cleanref" as="xs:string">
     <xsl:param name="input"/>
-    <xsl:variable name="temp" select="replace($input, '_', '-')"/>
-    <xsl:sequence select="replace($temp, '#', '')"/>
+    <!--<xsl:variable name="temp" select="replace($input, '_', '-')"/>
+    <xsl:sequence select="replace($temp, '#', '')"/>-->
+    <xsl:sequence select="replace(replace($input, '_', '-'), '#', '')"/>
   </xsl:function>
 
 
@@ -204,12 +207,23 @@
     <xsl:text>{</xsl:text>
     <xsl:copy-of select="head"/>
     <xsl:text>}</xsl:text>
+    <!--insert label-->
     <xsl:if test="@xml:id">
       <xsl:text>\smlabel{</xsl:text>
       <xsl:value-of select="my:cleanref(@xml:id)"/>
       <xsl:text>}</xsl:text>
     </xsl:if>
     <xsl:text>&#10;&#10;</xsl:text>
+    <!--fix \parindent for ¶4-->
+    <xsl:choose>
+      <xsl:when test="@xml:id='smdial'">
+<!--        <xsl:text>\parindent0pt</xsl:text>-->
+        <xsl:text>\hangindent=-14pt</xsl:text>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:text>\parindent=14pt</xsl:text>
+      </xsl:otherwise>
+    </xsl:choose>
     <xsl:apply-templates/>
   </xsl:template>
 
@@ -244,16 +258,16 @@
     <xsl:if test="@xml:id">
       <xsl:text>&#10;% ---------- paragraph ¶</xsl:text>
       <xsl:value-of select="my:cleanref(@xml:id)"/>
-      <xsl:text> starts here ↓</xsl:text>
-      <!-- -->
+      <xsl:text> starts here ↓&#10;</xsl:text>
+      <!-- insert parnum at the margin -->
+      <xsl:text>\smparnum{</xsl:text>
+      <xsl:value-of select="@n"/>
+      <xsl:text>}</xsl:text>
+      <!-- insert label -->
       <xsl:text>\smlabel{</xsl:text>
       <xsl:value-of select="my:cleanref(@xml:id)"/>
       <xsl:text>}</xsl:text>
     </xsl:if>
-    <xsl:text>\smparnum{</xsl:text>
-    <xsl:value-of select="@n"/>
-    <xsl:text>}</xsl:text>
-    <xsl:text>\hspace*{14pt}</xsl:text>
     <xsl:choose>
       <!--special centered paragraph, quasi header-->
       <xsl:when test="@ana = 'h1' or @ana = 'h2'">
@@ -280,7 +294,7 @@
         <xsl:apply-templates/>
       </xsl:otherwise>
     </xsl:choose>
-    <xsl:text>&#10;&#10;% ---------- paragraph ¶</xsl:text>
+    <xsl:text>&#10;% ---------- paragraph ¶</xsl:text>
     <xsl:value-of select="my:cleanref(@xml:id)"/>
     <xsl:text> ends here ↑&#10;</xsl:text>
   </xsl:template>
@@ -316,6 +330,8 @@
     </xsl:choose>
   </xsl:template>
 
+
+
   <xd:doc>
     <xd:desc>
       <xd:p>ignore all other ab</xd:p>
@@ -349,12 +365,11 @@
   <xd:doc>
     <xd:desc>
       <xd:p>lb[@n='1']</xd:p>
-      <xd:p>the first line break in a paragraph</xd:p>
+      <xd:p>the first lb in a p</xd:p>
     </xd:desc>
   </xd:doc>
   <xsl:template match="lb[@n = '1']">
-<!--    <xsl:text>&#10;</xsl:text>-->
-    <xsl:text>\Linum{</xsl:text>
+    <xsl:text>\linum{</xsl:text>
     <xsl:value-of select="@n"/>
     <xsl:text>}</xsl:text>
     <xsl:if test="@xml:id">
@@ -381,14 +396,18 @@
       <xsl:text/>
     </xsl:if>
     <xsl:choose>
-      <!--        only for Dialogue:      -->
+      <!--        only for Dialogue (¶4):      -->
       <xsl:when test="../@n = '4'">
-        <xsl:if test="contains(./@n, 'a')">
+        <!--add space for all couplets except the first one-->
+        <xsl:if test="contains(./@n, 'a') and not(./@n = '1a')">
           <xsl:text>\bigskip{}</xsl:text>
-          </xsl:if>
+        </xsl:if>
+        <!-- hack: adjust for first line of chapter-->
+        <xsl:if test="./@n = '1a'">
+          <xsl:text>\vspace*{-\baselineskip}</xsl:text>
+        </xsl:if>
         <xsl:text>&#10;&#10;</xsl:text>
-        <xsl:text>\par</xsl:text>
-        <xsl:text>\hspace*{14pt}\Linum{</xsl:text>
+        <xsl:text>\linum{</xsl:text>
         <xsl:value-of select="@n"/>
         <xsl:text>}</xsl:text>
         <xsl:if test="@xml:id">
@@ -398,12 +417,9 @@
         </xsl:if>
         <xsl:apply-templates/>
       </xsl:when>
-      <!--for all others: -->
+      <!--for all others ¶¶ -->
       <xsl:otherwise>
-        <xsl:if test="(preceding-sibling::lb)">
-          <xsl:text/>
-        </xsl:if>
-        <xsl:text>\Linum{</xsl:text>
+        <xsl:text>\linum{</xsl:text>
         <xsl:value-of select="@n"/>
         <xsl:text>}</xsl:text>
         <xsl:if test="@xml:id">
@@ -533,7 +549,7 @@
     </xd:desc>
   </xd:doc>
   <xsl:template match="l[parent::lg]">
-    <xsl:text>\Linum{</xsl:text>
+    <xsl:text>\linum{</xsl:text>
     <!--    <xsl:value-of select="@n + preceding::lb[1]/@n"/>-->
     <xsl:value-of select="@n"/>
     <xsl:text>}</xsl:text>
@@ -739,10 +755,9 @@
         <xsl:text>}</xsl:text>
       </xsl:if>
       <!-- print the line number -->
-      <xsl:text>\parindent14pt</xsl:text>
-      <xsl:text>\Linum{</xsl:text>
+      <xsl:text>\linumcom{</xsl:text>
       <xsl:value-of select="preceding::lb[1]/@n"/>
-      <xsl:text>}~</xsl:text>
+      <xsl:text>}</xsl:text>
       <!-- print the note lemma -->
       <xsl:text>\textbf{</xsl:text>
       <xsl:value-of select="@ana"/>
