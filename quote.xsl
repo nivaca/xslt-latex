@@ -234,9 +234,9 @@
       </xsl:otherwise>
     </xsl:choose>
     <!-- Insert ref -->
-    <xsl:text>({</xsl:text>
+    <xsl:text>{(</xsl:text>
     <xsl:apply-templates select="ref"/>
-    <xsl:text>})</xsl:text>
+    <xsl:text>)}</xsl:text>
   </xsl:template>
   
   

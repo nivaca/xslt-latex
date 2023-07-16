@@ -682,6 +682,8 @@
       <xd:p>@rend='eq' produces: [$=$ ]</xd:p>
       <xd:p>@rend='q' uses parenthesis instead of brackets</xd:p>
       <xd:p>@rend='peq' produces: ($=$ )</xd:p>
+      <xd:p>@rend='vel' produces: [o: ]</xd:p>
+      <xd:p>@rend='pvel' produces: (o: )</xd:p>
     </xd:desc>
   </xd:doc>
   <xsl:template match="supplied">
@@ -691,7 +693,7 @@
       </xsl:when>
       <xsl:otherwise>
         <xsl:choose>
-          <xsl:when test="@rend = 'p' or @rend = 'peq'">
+          <xsl:when test="@rend = 'p' or @rend = 'peq' or @rend='pvel'">
             <xsl:text>(</xsl:text>
           </xsl:when>
           <xsl:otherwise>
@@ -701,9 +703,12 @@
         <xsl:if test="@rend = 'p' or @rend = 'peq'">
           <xsl:text>$=$</xsl:text>
         </xsl:if>
+        <xsl:if test="@rend = 'vel' or @rend = 'pvel'">
+          <xsl:text>\emph{o:}\space{}</xsl:text>
+        </xsl:if>
         <xsl:apply-templates/>
         <xsl:choose>
-          <xsl:when test="@rend = 'p' or @rend = 'peq'">
+          <xsl:when test="@rend = 'p' or @rend = 'peq' or @rend='pvel'">
             <xsl:text>)</xsl:text>
           </xsl:when>
           <xsl:otherwise>
@@ -977,7 +982,7 @@
   <!--           miscellaneous elements            -->
   <!--=============================================-->
 
-  <xd:doc>
+ <!-- <xd:doc>
     <xd:desc>
       <xd:p>ab[@ana='leavevmode']</xd:p>
       <xd:p>this is required by LaTeX sometimes</xd:p>
@@ -1010,7 +1015,7 @@
   </xd:doc>
   <xsl:template match="pc[@ana = 'notesep']">
     <xsl:text>\notesep</xsl:text>
-  </xsl:template>
+  </xsl:template>-->
 
 
 </xsl:stylesheet>
