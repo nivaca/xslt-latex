@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
   xmlns:tei="http://www.tei-c.org/ns/1.0"
   xmlns:xs="http://www.w3.org/2001/XMLSchema"
@@ -148,7 +149,7 @@
   <xd:doc>
     <xd:desc>Main template</xd:desc>
   </xd:doc>
-  <xsl:template match="/">
+<xsl:template match="/">
 <xsl:text>\def\SMVersion{</xsl:text>
 <xsl:if test="/TEI/teiHeader/fileDesc/editionStmt/edition/@n">
   <xsl:value-of select="$combinedversionnumber"/>
@@ -531,8 +532,7 @@
   </xd:doc>
   <xsl:template match="l[not(parent::lg)]">
     <xsl:if test="preceding-sibling::l">
-      <xsl:text> /
-      </xsl:text>
+      <xsl:text>/ &#xA;</xsl:text>
     </xsl:if>
     <xsl:if test="@xml:id">
       <xsl:text>\smlabel{</xsl:text>
@@ -561,7 +561,7 @@
       <xsl:text>}</xsl:text>
     </xsl:if>
     <xsl:apply-templates/>
-    <xsl:text> \\</xsl:text>
+    <xsl:text> \par&#xA;</xsl:text>
   </xsl:template>
 
 
@@ -858,7 +858,7 @@
   </xd:doc>
   <xsl:template match="row">
     <xsl:apply-templates/>
-    <xsl:text> \\&#10;</xsl:text>
+    <xsl:text> \par&#10;</xsl:text>
   </xsl:template>
 
 
@@ -904,19 +904,19 @@
     <xsl:if test="persName[@xml:lang = 'es']">
       <xsl:text>\textbf{</xsl:text>
       <xsl:value-of select="persName[@xml:lang = 'es']"/>
-      <xsl:text>} &amp; \\</xsl:text>
+      <xsl:text>} &amp; \par</xsl:text>
       <xsl:text>&#xA;</xsl:text>
     </xsl:if>
 
     <xsl:if test="persName[@xml:lang = 'eng']">
       <xsl:value-of select="persName[@xml:lang = 'eng']"/>
-      <xsl:text> (inglés) \\</xsl:text>
+      <xsl:text> (inglés) \par</xsl:text>
       <xsl:text>&#xA;</xsl:text>
     </xsl:if>
 
     <xsl:if test="persName[@xml:lang = 'lat']">
       <xsl:value-of select="persName[@xml:lang = 'lat']"/>
-      <xsl:text> (latín) \\</xsl:text>
+      <xsl:text> (latín) \par</xsl:text>
       <xsl:text>&#xA;</xsl:text>
     </xsl:if>
 
@@ -924,20 +924,20 @@
       <xsl:when test="floruit">
         <xsl:text>fl. &amp; </xsl:text>
         <xsl:value-of select="floruit"/>
-        <xsl:text> \\</xsl:text>
+        <xsl:text> \par</xsl:text>
         <xsl:text>&#xA;</xsl:text>
       </xsl:when>
       <xsl:otherwise>
         <xsl:if test="birth">
           <xsl:text>Nacido en: &amp; </xsl:text>
           <xsl:value-of select="birth"/>
-          <xsl:text> \\</xsl:text>
+          <xsl:text> \par</xsl:text>
           <xsl:text>&#xA;</xsl:text>
         </xsl:if>
         <xsl:if test="death">
           <xsl:text>Muerto en: &amp; </xsl:text>
           <xsl:value-of select="death"/>
-          <xsl:text> \\</xsl:text>
+          <xsl:text> \par</xsl:text>
           <xsl:text>&#xA;</xsl:text>
         </xsl:if>
       </xsl:otherwise>
@@ -952,7 +952,7 @@
       <xsl:text>{</xsl:text>
       <xsl:value-of select="concat('https://viaf.org/viaf/', $viaf-id, '/')"/>
       <xsl:text>}</xsl:text>
-      <xsl:text> \\</xsl:text>
+      <xsl:text> \par</xsl:text>
       <xsl:text>&#xA;</xsl:text>
     </xsl:if>
 
@@ -966,7 +966,7 @@
       <xsl:value-of
         select="concat('https://www.wikidata.org/wiki/', $wikidata-id)"/>
       <xsl:text>}</xsl:text>
-      <xsl:text> \\</xsl:text>
+      <xsl:text> \par</xsl:text>
       <xsl:text>&#xA;</xsl:text>
     </xsl:if>
 
